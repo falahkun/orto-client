@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { BarChart2, PlayCircle, History, Activity } from 'lucide-react';
+import { usePathname, useParams } from 'next/navigation';
+import { BarChart2, PlayCircle, History, Activity, Home } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -10,19 +10,26 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-const navItems = [
-  { href: '/', label: 'Overview', icon: BarChart2 },
-  { href: '/play', label: 'Sesi Main', icon: PlayCircle },
-  { href: '/activity', label: 'Activity', icon: History },
-];
-
 export default function Navigation() {
   const pathname = usePathname();
+  const params = useParams();
+  const sessionId = params.id as string;
+
+  const navItems = [
+    { href: `/session/${sessionId}/overview`, label: 'Overview', icon: BarChart2 },
+    { href: `/session/${sessionId}/play`, label: 'Sesi Main', icon: PlayCircle },
+    { href: `/session/${sessionId}/activity`, label: 'Activity', icon: History },
+  ];
 
   return (
     <nav className="bg-surface border-t-2 md:border-t-0 md:border-r-2 border-sport-border fixed bottom-0 md:relative w-full md:w-72 h-24 md:h-screen flex flex-row md:flex-col items-center md:items-stretch justify-around md:justify-start z-50 md:pt-10">
-      <div className="hidden md:flex items-center gap-3 px-8 pb-8 mb-6 border-b-2 border-sport-border text-primary font-black text-3xl uppercase italic tracking-tighter">
-        <Activity className="w-10 h-10" /> AmericanoPro
+      <div className="hidden md:flex flex-col items-start gap-4 px-8 pb-8 mb-6 border-b-2 border-sport-border">
+        <div className="flex items-center gap-3 text-primary font-black text-3xl uppercase italic tracking-tighter">
+          <Activity className="w-10 h-10" /> AmericanoPro
+        </div>
+        <Link href="/dashboard" className="flex items-center gap-2 text-muted-text hover:text-primary transition-colors text-sm font-bold">
+          <Home className="w-4 h-4" /> Kembali ke Dashboard
+        </Link>
       </div>
       
       <div className="flex md:flex-col w-full md:px-4 gap-3">
