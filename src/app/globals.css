@@ -1,26 +1,74 @@
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800;900&family=Barlow:wght@300;400;500;600;700;800;900&display=swap');
+
 @import "tailwindcss";
 
+@theme {
+  --font-sans: 'Barlow', ui-sans-serif, system-ui, sans-serif;
+  --font-heading: 'Barlow Condensed', sans-serif;
+  
+  --color-primary: #DC2626; /* Team Red */
+  --color-primary-dark: #B91C1C;
+  --color-primary-light: #FEE2E2;
+  --color-cta: #FBBF24; /* Championship Gold/Amber */
+  --color-surface: #FFFFFF; /* Pure White */
+  --color-app-bg: #F8FAFC; /* Slate 50 - Very Light Gray */
+  --color-app-text: #0F172A; /* Slate 900 - Almost Black */
+  --color-muted-text: #64748B; /* Slate 500 */
+  --color-sport-border: #0F172A; /* Slate 900 - For heavy borders */
+  
+  --color-gold: #D97706;
+  --color-silver: #94A3B8;
+  --color-bronze: #B45309;
+  
+  --color-success: #10B981; /* Emerald 500 */
+  --color-danger: #EF4444; /* Red 500 */
+}
+
+/* Force Light Mode strictly */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --background: var(--color-app-bg);
+  --foreground: var(--color-app-text);
+  color-scheme: light;
 }
 
 body {
-  background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--background);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  font-weight: 800;
+}
+
+/* Custom Components */
+@layer components {
+  .sport-card {
+    @apply bg-surface border-2 border-sport-border shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] transition-all hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_rgba(15,23,42,1)];
+  }
+  
+  .sport-btn-primary {
+    @apply px-4 py-2 font-black uppercase tracking-wider border-2 border-sport-border shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all cursor-pointer inline-flex items-center justify-center bg-primary text-white hover:bg-primary-dark hover:border-sport-border;
+  }
+
+  .sport-btn-secondary {
+    @apply px-4 py-2 font-black uppercase tracking-wider border-2 border-sport-border shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all cursor-pointer inline-flex items-center justify-center bg-cta text-app-text hover:bg-amber-500 hover:border-sport-border;
+  }
+
+  .sport-btn-outline {
+    @apply px-4 py-2 font-black uppercase tracking-wider border-2 border-sport-border shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all cursor-pointer inline-flex items-center justify-center bg-white text-app-text hover:bg-app-bg border-sport-border;
+  }
+  
+  .sport-input {
+    @apply px-4 py-2 border-2 border-sport-border outline-none focus:ring-4 focus:ring-primary/20 transition-all bg-white text-app-text font-bold placeholder:text-muted-text/50;
+  }
+
+  .sport-badge {
+    @apply px-2 py-0.5 text-[10px] font-black uppercase tracking-widest border-2 border-sport-border;
+  }
 }
