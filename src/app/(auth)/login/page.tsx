@@ -45,7 +45,7 @@ export default function LoginPage() {
             <h1 className="text-5xl font-black text-app-text tracking-tighter italic uppercase drop-shadow-sm mt-4">
               Log In
             </h1>
-            <p className="text-muted-text font-bold text-lg mt-2">Masuk untuk mengelola sesi Americano Padel Anda.</p>
+            <p className="text-muted-text font-bold text-lg mt-2">Masuk untuk mengelola sesi permainan Anda.</p>
           </div>
         </div>
 

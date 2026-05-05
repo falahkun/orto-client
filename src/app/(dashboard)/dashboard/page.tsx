@@ -63,7 +63,7 @@ export default function DashboardIndexPage() {
           </div>
           My Dashboard
         </h1>
-        <p className="text-muted-text font-bold text-lg italic tracking-tight">Kelola semua sesi Americano Padel Anda dari sini.</p>
+        <p className="text-muted-text font-bold text-lg italic tracking-tight">Kelola semua sesi permainan Anda dari sini.</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -81,7 +81,7 @@ export default function DashboardIndexPage() {
         </button>
 
         <div className="sport-card p-6 md:col-span-2 flex flex-col justify-center items-start border-primary/20 bg-primary-light/10">
-          <h3 className="font-black text-2xl uppercase italic tracking-tighter text-app-text mb-2">Selamat Datang di Americano Pro!</h3>
+          <h3 className="font-black text-2xl uppercase italic tracking-tighter text-app-text mb-2">Selamat Datang di Orto!</h3>
           <p className="text-muted-text font-bold text-sm">Pilih "Buat Sesi Baru" untuk memulai turnamen Anda. Anda bisa mendaftarkan pemain, mengatur durasi, dan mencatat skor secara real-time.</p>
         </div>
       </div>

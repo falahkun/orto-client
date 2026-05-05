@@ -8,7 +8,7 @@ export default function LandingPage() {
       <nav className="border-b-4 border-sport-border bg-surface sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3 text-primary font-black text-2xl uppercase italic tracking-tighter">
-            <Activity className="w-8 h-8" /> AmericanoPro
+            <Activity className="w-8 h-8" /> Orto
           </div>
           <div className="flex items-center gap-4">
             <Link href="/login" className="font-black uppercase tracking-widest text-xs text-muted-text hover:text-primary transition-colors">
@@ -33,7 +33,7 @@ export default function LandingPage() {
               Track Your <span className="text-primary underline decoration-8 underline-offset-4 decoration-primary/20">Victory</span>
             </h1>
             <p className="text-xl md:text-2xl text-muted-text font-bold italic leading-tight max-w-md">
-              Kelola turnamen Americano Padel Anda secara profesional. Skor real-time, statistik otomatis, dan riwayat kemenangan.
+              Ubah hobi anda jadi profesional. Skor real-time, statistik otomatis, dan riwayat kemenangan.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Link href="/register" className="sport-btn-primary py-5 px-10 text-xl group shadow-[8px_8px_0px_0px_rgba(15,23,42,1)]">
@@ -122,7 +122,7 @@ export default function LandingPage() {
       {/* CTA Footer */}
       <section className="py-24 text-center space-y-10 px-6">
          <h2 className="text-5xl md:text-7xl font-black uppercase italic tracking-tighter max-w-2xl mx-auto leading-none"> Ready to rule the court?</h2>
-         <p className="text-xl text-muted-text font-bold italic max-w-xl mx-auto">Gabung dengan komunitas Americano Padel dan mulailah melacak performa Anda seperti pro.</p>
+         <p className="text-xl text-muted-text font-bold italic max-w-xl mx-auto">Gabung dengan komunitas Orto dan mulailah melacak performa Anda seperti pro.</p>
          <div className="flex justify-center">
             <Link href="/register" className="sport-btn-secondary py-6 px-16 text-3xl shadow-[10px_10px_0px_0px_rgba(15,23,42,1)]">
               START TRACKING NOW
@@ -134,10 +134,10 @@ export default function LandingPage() {
       <footer className="border-t-4 border-sport-border py-12 bg-surface">
         <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8">
            <div className="flex items-center gap-3 text-sport-border font-black text-xl uppercase italic tracking-tighter">
-            <Activity className="w-6 h-6" /> AmericanoPro
+            <Activity className="w-6 h-6" /> Orto
           </div>
           <div className="text-muted-text font-bold text-sm italic">
-            © 2026 Americano Pro Tracker. All Rights Reserved.
+            © 2026 Orto Pro Tracker. All Rights Reserved.
           </div>
           <div className="flex gap-6 text-[10px] font-black uppercase tracking-widest text-muted-text">
              <a href="#" className="hover:text-primary">Privacy</a>

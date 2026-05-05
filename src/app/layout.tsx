@@ -3,8 +3,8 @@ import "./globals.css";
 import Providers from "./providers";
 
 export const metadata: Metadata = {
-  title: "Americano Pro Tracker",
-  description: "Track your Americano Padel matches with ease",
+  title: "Orto | Tournament Tracker",
+  description: "Ubah hobi jadi profesional!",
 };
 
 export default function RootLayout({
