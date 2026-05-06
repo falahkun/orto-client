@@ -1,15 +1,63 @@
 'use client';
 
 import { useStore } from '@/store/useStore';
-import { Radio, List, Flag, AlertCircle } from 'lucide-react';
+import { Radio, List, Flag, AlertCircle, Loader2 } from 'lucide-react';
 import Scoreboard from './Scoreboard';
+import { createClient } from '@/utils/supabase/client';
+import { useParams } from 'next/navigation';
+import { useState } from 'react';
 
 export default function ExecutionPhase() {
   const { matches, activeMatchId, startMatch, endSession } = useStore();
+  const supabase = createClient();
+  const params = useParams();
+  const sessionId = params.id as string;
+  const [isUpdating, setIsUpdating] = useState(false);
 
   const completedCount = matches.filter((m) => m.status === 'completed').length;
   const activeMatch = matches.find((m) => m.id === activeMatchId);
   const pendingMatches = matches.filter((m) => m.status !== 'completed');
+
+  const handleStartMatch = async (matchId: string) => {
+    setIsUpdating(true);
+    const startTime = new Date().toISOString();
+    
+    // 1. Update DB
+    const { error } = await supabase
+      .from('matches')
+      .update({ 
+        status: 'active',
+        match_start_at: startTime
+      })
+      .eq('id', matchId);
+
+    if (error) {
+      alert(`Gagal memulai pertandingan: ${error.message}`);
+    } else {
+      // 2. Update Local Store
+      startMatch(matchId, startTime);
+    }
+    setIsUpdating(false);
+  };
+
+  const handleEndSession = async () => {
+    if (!confirm('Yakin ingin mengakhiri sesi? Semua jadwal belum main akan dihapus.')) return;
+    
+    setIsUpdating(true);
+    // 1. Update DB
+    const { error } = await supabase
+      .from('sessions')
+      .update({ status: 'completed' })
+      .eq('id', sessionId);
+
+    if (error) {
+      alert(`Gagal mengakhiri sesi: ${error.message}`);
+    } else {
+      // 2. Update Local Store
+      endSession();
+    }
+    setIsUpdating(false);
+  };
 
   return (
     <div className="space-y-10 animate-in fade-in slide-in-from-bottom-6 duration-500">
@@ -27,14 +75,12 @@ export default function ExecutionPhase() {
         </div>
         
         <button
-          onClick={() => {
-            if (confirm('Yakin ingin mengakhiri sesi? Semua jadwal belum main akan dihapus.')) {
-              endSession();
-            }
-          }}
-          className="sport-btn bg-surface text-primary border-primary shadow-[3px_3px_0px_0px_rgba(220,38,38,1)] hover:bg-primary-light text-xs py-3 px-6"
+          onClick={handleEndSession}
+          disabled={isUpdating}
+          className="sport-btn bg-surface text-primary border-primary shadow-[3px_3px_0px_0px_rgba(220,38,38,1)] hover:bg-primary-light text-xs py-3 px-6 disabled:opacity-50"
         >
-          <AlertCircle className="w-4 h-4 mr-2" /> Akhiri Sesi
+          {isUpdating ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <AlertCircle className="w-4 h-4 mr-2" />} 
+          Akhiri Sesi
         </button>
       </div>
 
@@ -106,10 +152,11 @@ export default function ExecutionPhase() {
 
                   {!activeMatchId && !isActive && (
                     <button
-                      onClick={() => startMatch(match.id)}
-                      className="sport-btn-primary w-full mt-10 text-xl py-5 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)]"
+                      onClick={() => handleStartMatch(match.id)}
+                      disabled={isUpdating}
+                      className="sport-btn-primary w-full mt-10 text-xl py-5 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] disabled:opacity-50"
                     >
-                      Mulai Game Ini
+                      {isUpdating ? <Loader2 className="w-6 h-6 animate-spin" /> : 'Mulai Game Ini'}
                     </button>
                   )}
                 </div>

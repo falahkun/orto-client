@@ -65,6 +65,8 @@ Represents a specific match within a session.
 - `score_a` (integer, default null)
 - `score_b` (integer, default null)
 - `status` (text, default `'pending'`) - e.g., 'pending', 'active', 'completed'
+- `match_start_at` (timestamp with time zone, optional)
+- `match_end_at` (timestamp with time zone, optional)
 - `created_at` (timestamp with time zone, default `now()`)
 
 ---
@@ -208,6 +210,8 @@ create table public.matches (
   score_a integer,
   score_b integer,
   status text default 'pending'::text not null,
+  match_start_at timestamp with time zone,
+  match_end_at timestamp with time zone,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 

@@ -11,10 +11,12 @@ interface AppState {
   // Actions
   addPlayer: (name: string, communityMemberId?: string) => void;
   removePlayer: (id: string) => void;
+  prepareSession: (matchesPerPlayer: number, duration: number) => { players: Player[], matches: Match[] };
+  activateSession: (players: Player[], matches: Match[], matchesPerPlayer: number, duration: number) => void;
   generateSession: (matchesPerPlayer: number, duration: number) => void;
   endSession: () => void;
-  startMatch: (matchId: string) => void;
-  saveMatchScore: (matchId: string, scoreA: number, scoreB: number) => void;
+  startMatch: (matchId: string, startTime: string) => void;
+  saveMatchScore: (matchId: string, scoreA: number, scoreB: number, endTime: string) => void;
   resetState: () => void;
 }
 
@@ -52,9 +54,9 @@ export const useStore = create<AppState>()(
         }));
       },
 
-      generateSession: (matchesPerPlayer: number, duration: number) => {
+      prepareSession: (matchesPerPlayer: number, duration: number) => {
         const { players } = get();
-        if (players.length < 4) return;
+        if (players.length < 4) return { players: [], matches: [] };
 
         const totalSlotsNeeded = players.length * matchesPerPlayer;
         const totalMatchesRequired = Math.ceil(totalSlotsNeeded / 4);
@@ -84,12 +86,24 @@ export const useStore = create<AppState>()(
           });
         }
 
+        const resetPlayers = players.map((p) => ({ ...p, matchesPlayed: 0, totalPoints: 0 }));
+        return { players: resetPlayers, matches: newMatches };
+      },
+
+      activateSession: (players: Player[], matches: Match[], matchesPerPlayer: number, duration: number) => {
         set({
-          matches: newMatches,
+          players,
+          matches,
           session: { isActive: true, durationMinutes: duration, targetMatchesPerPlayer: matchesPerPlayer },
-          players: players.map((p) => ({ ...p, matchesPlayed: 0, totalPoints: 0 })),
           activeMatchId: null,
         });
+      },
+
+      generateSession: (matchesPerPlayer: number, duration: number) => {
+        const { players, matches } = get().prepareSession(matchesPerPlayer, duration);
+        if (players.length > 0) {
+          get().activateSession(players, matches, matchesPerPlayer, duration);
+        }
       },
 
       endSession: () => {
@@ -100,23 +114,23 @@ export const useStore = create<AppState>()(
         }));
       },
 
-      startMatch: (matchId: string) => {
+      startMatch: (matchId: string, startTime: string) => {
         set((state) => ({
           activeMatchId: matchId,
           matches: state.matches.map((m) =>
-            m.id === matchId ? { ...m, status: 'active' } : m
+            m.id === matchId ? { ...m, status: 'active', matchStartAt: startTime } : m
           ),
         }));
       },
 
-      saveMatchScore: (matchId: string, scoreA: number, scoreB: number) => {
+      saveMatchScore: (matchId: string, scoreA: number, scoreB: number, endTime: string) => {
         set((state) => {
           const match = state.matches.find((m) => m.id === matchId);
           if (!match) return state;
 
           const updatedMatches = state.matches.map((m) =>
             m.id === matchId
-              ? { ...m, scoreA, scoreB, status: 'completed' as const }
+              ? { ...m, scoreA, scoreB, status: 'completed' as const, matchEndAt: endTime }
               : m
           );
 

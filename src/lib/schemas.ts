@@ -18,6 +18,8 @@ export const MatchSchema = z.object({
   scoreA: z.number().nullable().default(null),
   scoreB: z.number().nullable().default(null),
   status: z.enum(['pending', 'active', 'completed']).default('pending'),
+  matchStartAt: z.string().optional().nullable(),
+  matchEndAt: z.string().optional().nullable(),
 });
 
 export type Match = z.infer<typeof MatchSchema>;

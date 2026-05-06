@@ -11,7 +11,7 @@ export default function SetupPhase() {
   const sessionId = params.id as string;
   const supabase = createClient();
   
-  const { players, addPlayer, removePlayer, generateSession } = useStore();
+  const { players, addPlayer, removePlayer, prepareSession, activateSession } = useStore();
   const [playerName, setPlayerName] = useState('');
   const [matchesPerPlayer, setMatchesPerPlayer] = useState(4);
   const [duration, setDuration] = useState(10);
@@ -58,12 +58,101 @@ export default function SetupPhase() {
     addPlayer(member.name, member.id);
   };
 
-  const handleStartSession = () => {
+  const handleStartSession = async () => {
     if (players.length < 4) {
       alert('Minimal 4 pemain untuk mulai sesi!');
       return;
     }
-    generateSession(matchesPerPlayer, duration);
+
+    setIsLoadingMembers(true); 
+    
+    try {
+      // 1. Prepare matches locally (returns data without updating store immediately)
+      const { players: localPlayers, matches: localMatches } = prepareSession(matchesPerPlayer, duration);
+      
+      if (localPlayers.length === 0) return;
+
+      // 2. Insert players to Supabase
+      const playersToInsert = localPlayers.map(p => ({
+        session_id: sessionId,
+        community_member_id: p.communityMemberId,
+        name: p.name,
+      }));
+
+      const { data: dbPlayers, error: pError } = await supabase
+        .from('players')
+        .insert(playersToInsert)
+        .select();
+
+      if (pError) throw pError;
+
+      // Create a mapping from local name/communityMemberId to DB player ID
+      const playerMap: Record<string, string> = {};
+      dbPlayers.forEach(p => {
+        const key = p.community_member_id || p.name;
+        playerMap[key] = p.id;
+      });
+
+      // 3. Insert matches to Supabase
+      const matchesToInsert = localMatches.map(m => ({
+        session_id: sessionId,
+        index: m.index,
+        team_a_player1_id: playerMap[m.teamA[0].communityMemberId || m.teamA[0].name],
+        team_a_player2_id: playerMap[m.teamA[1].communityMemberId || m.teamA[1].name],
+        team_b_player1_id: playerMap[m.teamB[0].communityMemberId || m.teamB[0].name],
+        team_b_player2_id: playerMap[m.teamB[1].communityMemberId || m.teamB[1].name],
+        status: 'pending',
+      }));
+
+      const { data: dbMatches, error: mError } = await supabase
+        .from('matches')
+        .insert(matchesToInsert)
+        .select();
+
+      if (mError) throw mError;
+
+      // 4. Update store with database IDs and activate
+      const finalPlayers = dbPlayers.map(p => ({
+        id: p.id,
+        communityMemberId: p.community_member_id,
+        name: p.name,
+        matchesPlayed: 0,
+        totalPoints: 0,
+      }));
+
+      const finalMatches = dbMatches.map(m => {
+        const pA1 = finalPlayers.find(p => p.id === m.team_a_player1_id)!;
+        const pA2 = finalPlayers.find(p => p.id === m.team_a_player2_id)!;
+        const pB1 = finalPlayers.find(p => p.id === m.team_b_player1_id)!;
+        const pB2 = finalPlayers.find(p => p.id === m.team_b_player2_id)!;
+
+        return {
+          id: m.id,
+          index: m.index,
+          teamA: [pA1, pA2],
+          teamB: [pB1, pB2],
+          scoreA: null,
+          scoreB: null,
+          status: 'pending' as const,
+          matchStartAt: null,
+          matchEndAt: null,
+        };
+      });
+
+      // Update session status in DB
+      await supabase
+        .from('sessions')
+        .update({ status: 'active' })
+        .eq('id', sessionId);
+
+      // Now ACTIVATE in store with final data
+      activateSession(finalPlayers, finalMatches, matchesPerPlayer, duration);
+
+    } catch (err: any) {
+      alert(`Gagal memulai sesi: ${err.message}`);
+    } finally {
+      setIsLoadingMembers(false);
+    }
   };
 
   const filteredMembers = communityMembers.filter(m => 

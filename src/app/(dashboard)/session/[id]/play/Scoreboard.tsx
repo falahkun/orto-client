@@ -3,7 +3,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { useStore } from '@/store/useStore';
 import { Match } from '@/lib/schemas';
-import { MonitorPlay, Play, Pause, RotateCcw, Plus, Minus, Save, Zap } from 'lucide-react';
+import { MonitorPlay, Play, Pause, RotateCcw, Plus, Minus, Save, Zap, Loader2 } from 'lucide-react';
+import { createClient } from '@/utils/supabase/client';
 
 interface ScoreboardProps {
   match: Match;
@@ -15,7 +16,9 @@ export default function Scoreboard({ match }: ScoreboardProps) {
   const [isRunning, setIsRunning] = useState(false);
   const [scoreA, setScoreA] = useState(0);
   const [scoreB, setScoreB] = useState(0);
+  const [isSaving, setIsSaving] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const supabase = createClient();
 
   useEffect(() => {
     if (isRunning && timeLeft > 0) {
@@ -40,8 +43,28 @@ export default function Scoreboard({ match }: ScoreboardProps) {
     return `${m}:${s}`;
   };
 
-  const handleSave = () => {
-    saveMatchScore(match.id, scoreA, scoreB);
+  const handleSave = async () => {
+    setIsSaving(true);
+    const endTime = new Date().toISOString();
+
+    // 1. Update DB
+    const { error } = await supabase
+      .from('matches')
+      .update({
+        score_a: scoreA,
+        score_b: scoreB,
+        status: 'completed',
+        match_end_at: endTime
+      })
+      .eq('id', match.id);
+
+    if (error) {
+      alert(`Gagal menyimpan hasil: ${error.message}`);
+    } else {
+      // 2. Update Local Store
+      saveMatchScore(match.id, scoreA, scoreB, endTime);
+    }
+    setIsSaving(false);
   };
 
   return (
@@ -145,9 +168,11 @@ export default function Scoreboard({ match }: ScoreboardProps) {
 
         <button
           onClick={handleSave}
-          className="sport-btn-secondary w-full py-8 text-3xl flex items-center justify-center gap-6 shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] border-surface"
+          disabled={isSaving}
+          className="sport-btn-secondary w-full py-8 text-3xl flex items-center justify-center gap-6 shadow-[8px_8px_0px_0px_rgba(255,255,255,1)] border-surface disabled:opacity-50"
         >
-          <Save className="w-10 h-10" /> SUBMIT RESULTS
+          {isSaving ? <Loader2 className="w-10 h-10 animate-spin" /> : <Save className="w-10 h-10" />} 
+          {isSaving ? 'SAVING...' : 'SUBMIT RESULTS'}
         </button>
       </div>
     </section>
