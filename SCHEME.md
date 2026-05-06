@@ -33,11 +33,20 @@ Represents a "Play Session" created by a user within a community.
 - `duration_minutes` (integer, default 10)
 - `created_at` (timestamp with time zone, default `now()`)
 
+### `community_members`
+Represents a consistent member of a community.
+
+- `id` (uuid, primary key, default `uuid_generate_v4()`)
+- `community_id` (uuid, not null, references `communities(id)` on delete cascade)
+- `name` (text, not null)
+- `created_at` (timestamp with time zone, default `now()`)
+
 ### `players`
-Represents a player participating in a specific session.
+Represents a player participating in a specific session. Can be linked to a community member or be a guest.
 
 - `id` (uuid, primary key, default `uuid_generate_v4()`)
 - `session_id` (uuid, not null, references `sessions(id)` on delete cascade)
+- `community_member_id` (uuid, references `community_members(id)` on delete set null)
 - `name` (text, not null)
 - `matches_played` (integer, default 0)
 - `total_points` (integer, default 0)
@@ -152,9 +161,25 @@ create policy "Users can manage their own sessions"
 -- ==========================================
 -- PLAYERS
 -- ==========================================
+-- 1. Community Members
+create table public.community_members (
+  id uuid default uuid_generate_v4() primary key,
+  community_id uuid references public.communities(id) on delete cascade not null,
+  name text not null,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table public.community_members enable row level security;
+
+create policy "Users can manage members of their communities"
+  on community_members for all
+  using ( exists (select 1 from communities where id = community_members.community_id and user_id = auth.uid()) );
+
+-- 2. Session Players
 create table public.players (
   id uuid default uuid_generate_v4() primary key,
   session_id uuid references public.sessions(id) on delete cascade not null,
+  community_member_id uuid references public.community_members(id) on delete set null,
   name text not null,
   matches_played integer default 0 not null,
   total_points integer default 0 not null,

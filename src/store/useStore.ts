@@ -9,7 +9,7 @@ interface AppState {
   activeMatchId: string | null;
   
   // Actions
-  addPlayer: (name: string) => void;
+  addPlayer: (name: string, communityMemberId?: string) => void;
   removePlayer: (id: string) => void;
   generateSession: (matchesPerPlayer: number, duration: number) => void;
   endSession: () => void;
@@ -26,13 +26,19 @@ export const useStore = create<AppState>()(
       session: { isActive: false, durationMinutes: 10, targetMatchesPerPlayer: 4 },
       activeMatchId: null,
 
-      addPlayer: (name: string) => {
+      addPlayer: (name: string, communityMemberId?: string) => {
         const { players } = get();
+        // Prevent duplicate if same name or same community member
         if (players.some((p) => p.name.toLowerCase() === name.toLowerCase())) {
           return;
         }
+        if (communityMemberId && players.some((p) => p.communityMemberId === communityMemberId)) {
+          return;
+        }
+        
         const newPlayer: Player = {
           id: Date.now().toString(),
+          communityMemberId,
           name,
           matchesPlayed: 0,
           totalPoints: 0,

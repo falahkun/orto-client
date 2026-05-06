@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 export const PlayerSchema = z.object({
   id: z.string(),
+  communityMemberId: z.string().optional(),
   name: z.string().min(1, 'Nama pemain tidak boleh kosong'),
   matchesPlayed: z.number().default(0),
   totalPoints: z.number().default(0),
