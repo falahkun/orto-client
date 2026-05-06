@@ -33,6 +33,8 @@ export async function updateSession(request: NextRequest) {
 
   // Define protected routes that require authentication
   const isProtectedRoute = request.nextUrl.pathname.startsWith('/dashboard') || 
+                           request.nextUrl.pathname.startsWith('/community') || 
+                           request.nextUrl.pathname.startsWith('/session') || 
                            request.nextUrl.pathname.startsWith('/play') || 
                            request.nextUrl.pathname.startsWith('/activity')
 

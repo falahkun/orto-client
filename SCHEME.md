@@ -12,11 +12,21 @@ Extends the default Supabase Auth `users` table to store application-specific us
 - `email` (text, not null)
 - `created_at` (timestamp with time zone, default `now()`)
 
-### `sessions`
-Represents a "Play Session" created by a user.
+### `communities`
+Represents a group or community created by a user.
 
 - `id` (uuid, primary key, default `uuid_generate_v4()`)
 - `user_id` (uuid, not null, references `profiles(id)`)
+- `name` (text, not null)
+- `description` (text, optional)
+- `created_at` (timestamp with time zone, default `now()`)
+
+### `sessions`
+Represents a "Play Session" created by a user within a community.
+
+- `id` (uuid, primary key, default `uuid_generate_v4()`)
+- `user_id` (uuid, not null, references `profiles(id)`)
+- `community_id` (uuid, references `communities(id)` on delete cascade)
 - `name` (text, optional)
 - `status` (text, default `'setup'`) - e.g., 'setup', 'active', 'completed'
 - `target_matches_per_player` (integer, default 4)
@@ -101,11 +111,30 @@ create trigger on_auth_user_created
 
 
 -- ==========================================
+-- COMMUNITIES
+-- ==========================================
+create table public.communities (
+  id uuid default uuid_generate_v4() primary key,
+  user_id uuid references public.profiles(id) on delete cascade not null,
+  name text not null,
+  description text,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table public.communities enable row level security;
+
+create policy "Users can manage their own communities"
+  on communities for all
+  using ( auth.uid() = user_id );
+
+
+-- ==========================================
 -- SESSIONS
 -- ==========================================
 create table public.sessions (
   id uuid default uuid_generate_v4() primary key,
   user_id uuid references public.profiles(id) on delete cascade not null,
+  community_id uuid references public.communities(id) on delete cascade,
   name text,
   status text default 'setup'::text not null,
   target_matches_per_player integer default 4 not null,
@@ -159,6 +188,13 @@ create table public.matches (
 
 alter table public.matches enable row level security;
 
+-- Users can access matches if they own the session
+create policy "Users can manage matches of their sessions"
+  on matches for all
+  using ( exists (select 1 from sessions where id = matches.session_id and user_id = auth.uid()) );
+```
+uid()) );
+```
 -- Users can access matches if they own the session
 create policy "Users can manage matches of their sessions"
   on matches for all

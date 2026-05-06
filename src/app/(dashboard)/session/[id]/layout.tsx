@@ -1,7 +1,8 @@
 import { createClient } from '@/utils/supabase/server';
 import { notFound } from 'next/navigation';
 import Navigation from "@/components/Navigation";
-import { Trophy } from 'lucide-react';
+import Link from 'next/link';
+import { Trophy, Users } from 'lucide-react';
 
 export default async function SessionLayout({
   children,
@@ -22,7 +23,7 @@ export default async function SessionLayout({
   // 2. Fetch session and check ownership
   const { data: session, error: sessionError } = await supabase
     .from('sessions')
-    .select('*')
+    .select('*, communities(name)')
     .eq('id', id)
     .single();
 
@@ -34,6 +35,8 @@ export default async function SessionLayout({
     notFound();
   }
 
+  const community = (session as any).communities;
+
   return (
     <div className="min-h-screen bg-app-bg p-4 md:p-10">
       <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-500">
@@ -41,6 +44,14 @@ export default async function SessionLayout({
         {/* Redesigned Header matching Dashboard style */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div className="flex flex-col gap-2">
+            {community && (
+              <Link 
+                href={`/community/${session.community_id}`}
+                className="text-[10px] font-black text-muted-text hover:text-primary transition-colors uppercase tracking-[0.2em] italic flex items-center gap-1 mb-1"
+              >
+                <Users className="w-3 h-3" /> {community.name}
+              </Link>
+            )}
             <h1 className="text-4xl md:text-5xl font-black text-app-text tracking-tighter italic uppercase drop-shadow-sm flex items-center gap-4">
               <div className="bg-primary p-3 border-2 border-sport-border shadow-[3px_3px_0px_0px_rgba(15,23,42,1)]">
                 <Trophy className="w-8 h-8 text-surface" />
