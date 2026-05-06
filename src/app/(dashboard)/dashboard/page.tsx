@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Users, Plus, PlayCircle, Trophy, Loader2, ArrowRight } from 'lucide-react';
+import { Users, Plus, PlayCircle, Trophy, Loader2, ArrowRight, LogOut } from 'lucide-react';
 import { checkCommunityLimit } from '@/lib/limits';
 
 export default function DashboardIndexPage() {
@@ -35,6 +35,11 @@ export default function DashboardIndexPage() {
       if (data) setCommunities(data);
     }
     setIsLoading(false);
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push('/login');
   };
 
   const handleCreateCommunity = async (e: React.FormEvent) => {
@@ -73,14 +78,24 @@ export default function DashboardIndexPage() {
 
   return (
     <div className="space-y-10 animate-in fade-in slide-in-from-bottom-6 duration-500 md:p-10">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-5xl font-black text-app-text tracking-tighter italic uppercase drop-shadow-sm flex items-center gap-4">
-          <div className="bg-primary p-3 border-2 border-sport-border shadow-[3px_3px_0px_0px_rgba(15,23,42,1)]">
-            <Users className="w-8 h-8 text-surface" />
-          </div>
-          My Communities
-        </h1>
-        <p className="text-muted-text font-bold text-lg italic tracking-tight">Kelola grup dan klub olahraga Anda.</p>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <div className="flex flex-col gap-2">
+          <h1 className="text-5xl font-black text-app-text tracking-tighter italic uppercase drop-shadow-sm flex items-center gap-4">
+            <div className="bg-primary p-3 border-2 border-sport-border shadow-[3px_3px_0px_0px_rgba(15,23,42,1)]">
+              <Users className="w-8 h-8 text-surface" />
+            </div>
+            My Communities
+          </h1>
+          <p className="text-muted-text font-bold text-lg italic tracking-tight">Kelola grup dan klub olahraga Anda.</p>
+        </div>
+
+        <button
+          onClick={handleLogout}
+          className="sport-btn-outline px-6 py-3 flex items-center gap-2 text-sm shadow-[4px_4px_0px_0px_rgba(15,23,42,0.1)] hover:shadow-[4px_4px_0px_0px_rgba(15,23,42,1)]"
+        >
+          <LogOut className="w-4 h-4" />
+          LOGOUT
+        </button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
