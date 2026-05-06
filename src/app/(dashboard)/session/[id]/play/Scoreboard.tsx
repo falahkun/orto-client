@@ -47,24 +47,51 @@ export default function Scoreboard({ match }: ScoreboardProps) {
     setIsSaving(true);
     const endTime = new Date().toISOString();
 
-    // 1. Update DB
-    const { error } = await supabase
-      .from('matches')
-      .update({
-        score_a: scoreA,
-        score_b: scoreB,
-        status: 'completed',
-        match_end_at: endTime
-      })
-      .eq('id', match.id);
+    try {
+      // 1. Update Match in DB
+      const { error: matchError } = await supabase
+        .from('matches')
+        .update({
+          score_a: scoreA,
+          score_b: scoreB,
+          status: 'completed',
+          match_end_at: endTime
+        })
+        .eq('id', match.id);
 
-    if (error) {
-      alert(`Gagal menyimpan hasil: ${error.message}`);
-    } else {
-      // 2. Update Local Store
+      if (matchError) throw matchError;
+
+      // 2. Update involved players' stats in DB
+      const updatePlayerStats = async (playerId: string, points: number) => {
+        // We need to increment the current values. 
+        // Supabase has an 'rpc' for this, but for simplicity let's use the current store values
+        const localPlayer = useStore.getState().players.find(p => p.id === playerId);
+        if (!localPlayer) return;
+
+        await supabase
+          .from('players')
+          .update({
+            matches_played: localPlayer.matchesPlayed + 1,
+            total_points: localPlayer.totalPoints + points
+          })
+          .eq('id', playerId);
+      };
+
+      await Promise.all([
+        updatePlayerStats(match.teamA[0].id, scoreA),
+        updatePlayerStats(match.teamA[1].id, scoreA),
+        updatePlayerStats(match.teamB[0].id, scoreB),
+        updatePlayerStats(match.teamB[1].id, scoreB),
+      ]);
+
+      // 3. Update Local Store
       saveMatchScore(match.id, scoreA, scoreB, endTime);
+      
+    } catch (err: any) {
+      alert(`Gagal menyimpan hasil: ${err.message}`);
+    } finally {
+      setIsSaving(false);
     }
-    setIsSaving(false);
   };
 
   return (

@@ -1,7 +1,7 @@
 import { createClient } from '@/utils/supabase/server';
 import { notFound } from 'next/navigation';
 import Navigation from "@/components/Navigation";
-import StorageCleaner from "@/components/StorageCleaner";
+import SessionHydrator from "@/components/SessionHydrator";
 import Link from 'next/link';
 import { Trophy, Users } from 'lucide-react';
 
@@ -40,7 +40,7 @@ export default async function SessionLayout({
 
   return (
     <div className="min-h-screen bg-app-bg p-4 md:p-10">
-      <StorageCleaner />
+      <SessionHydrator sessionId={id} />
       <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-500">
         
         {/* Redesigned Header matching Dashboard style */}

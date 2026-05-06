@@ -17,6 +17,7 @@ interface AppState {
   endSession: () => void;
   startMatch: (matchId: string, startTime: string) => void;
   saveMatchScore: (matchId: string, scoreA: number, scoreB: number, endTime: string) => void;
+  hydrateSession: (players: Player[], matches: Match[], session: Session) => void;
   resetState: () => void;
 }
 
@@ -154,6 +155,15 @@ export const useStore = create<AppState>()(
             players: updatedPlayers,
             activeMatchId: null,
           };
+        });
+      },
+
+      hydrateSession: (players: Player[], matches: Match[], session: Session) => {
+        set({
+          players,
+          matches,
+          session,
+          activeMatchId: matches.find(m => m.status === 'active')?.id || null,
         });
       },
 
