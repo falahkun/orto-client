@@ -39,16 +39,35 @@ export async function updateSession(request: NextRequest) {
   // Define auth routes that shouldn't be accessible when logged in
   const isAuthRoute = request.nextUrl.pathname === '/login' || request.nextUrl.pathname === '/register'
 
+  const isOnboardingRoute = request.nextUrl.pathname === '/onboarding'
+
   if (isProtectedRoute && !user) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)
   }
 
-  if (isAuthRoute && user) {
-    const url = request.nextUrl.clone()
-    url.pathname = '/dashboard'
-    return NextResponse.redirect(url)
+  if (user) {
+    // Check if onboarding is completed using user metadata
+    const onboardingCompleted = user.user_metadata?.onboarding_completed === true
+
+    if (!onboardingCompleted && !isOnboardingRoute && isProtectedRoute) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/onboarding'
+      return NextResponse.redirect(url)
+    }
+
+    if (onboardingCompleted && isOnboardingRoute) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/dashboard'
+      return NextResponse.redirect(url)
+    }
+
+    if (isAuthRoute) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/dashboard'
+      return NextResponse.redirect(url)
+    }
   }
 
   return supabaseResponse

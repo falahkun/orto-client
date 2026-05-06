@@ -63,6 +63,8 @@ create table public.profiles (
   id uuid references auth.users on delete cascade not null primary key,
   username text unique not null,
   email text not null,
+  hobbies text[] default '{}',
+  onboarding_completed boolean default false,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
@@ -161,4 +163,6 @@ alter table public.matches enable row level security;
 create policy "Users can manage matches of their sessions"
   on matches for all
   using ( exists (select 1 from sessions where id = matches.session_id and user_id = auth.uid()) );
+```
+uid()) );
 ```
