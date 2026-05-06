@@ -1,7 +1,14 @@
 import Link from 'next/link';
 import { Activity, Trophy, Users, Zap, Timer, ChevronRight, Play } from 'lucide-react';
+import { createClient } from '@/utils/supabase/server';
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  const supabase = await createClient();
+  const { data: plans } = await supabase
+    .from('plans')
+    .select('*, benefits:plan_benefits(*)')
+    .order('price_monthly', { ascending: true });
+
   return (
     <div className="min-h-screen bg-app-bg">
       {/* Navbar */}
@@ -116,6 +123,64 @@ export default function LandingPage() {
              <div className="text-5xl font-black italic tracking-tighter text-cta">24/7</div>
              <div className="text-[10px] font-black uppercase tracking-[0.3em] opacity-60">Live Support</div>
           </div>
+        </div>
+      </section>
+
+      {/* Pricing Section */}
+      <section id="pricing" className="max-w-6xl mx-auto px-6 py-24 space-y-16">
+        <div className="text-center space-y-4">
+          <h2 className="text-5xl md:text-7xl font-black uppercase italic tracking-tighter">Pilih Plan Anda</h2>
+          <p className="text-xl text-muted-text font-bold italic">Upgrade untuk fitur profesional dan limitasi yang lebih luas.</p>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-8">
+          {plans?.map((plan) => {
+            const isStarter = plan.id === 'starter';
+            const isPro = plan.id === 'pro';
+            
+            return (
+              <div 
+                key={plan.id}
+                className={`sport-card p-8 flex flex-col space-y-8 bg-surface border-2 transition-all relative overflow-hidden ${
+                  isStarter ? 'bg-primary-light/5 border-primary shadow-[8px_8px_0px_0px_rgba(220,38,38,1)]' : 'hover:border-sport-border'
+                } ${isPro ? 'hover:border-cta' : ''}`}
+              >
+                {isStarter && (
+                  <div className="absolute top-4 right-4 bg-primary text-surface px-3 py-1 text-[10px] font-black uppercase tracking-widest italic">POPULER</div>
+                )}
+                
+                <div className="space-y-2">
+                  <h3 className={`text-3xl font-black uppercase italic tracking-tighter ${isStarter ? 'text-primary' : isPro ? 'text-cta' : ''}`}>
+                    {plan.name}
+                  </h3>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-4xl font-black italic">
+                      {plan.price_monthly === 0 ? 'Rp 0' : `Rp ${Math.floor(plan.price_monthly / 1000)}k`}
+                    </span>
+                    <span className="text-muted-text font-bold text-sm uppercase">/ bulan</span>
+                  </div>
+                </div>
+
+                <ul className="space-y-4 flex-1">
+                  {(plan as any).benefits?.map((benefit: any) => (
+                    <li key={benefit.id} className="flex items-center gap-3 font-bold italic text-sm">
+                      <Zap className={`w-4 h-4 ${isPro ? 'text-cta' : 'text-primary'}`} /> 
+                      {benefit.benefit_text}
+                    </li>
+                  ))}
+                </ul>
+
+                <Link 
+                  href="/register" 
+                  className={`w-full py-4 text-center font-black uppercase italic ${
+                    isStarter ? 'sport-btn-primary' : isPro ? 'sport-btn-secondary' : 'sport-btn-outline'
+                  }`}
+                >
+                  {plan.price_monthly === 0 ? 'Mulai Gratis' : `Pilih ${plan.name}`}
+                </Link>
+              </div>
+            );
+          })}
         </div>
       </section>
 

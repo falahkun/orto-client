@@ -31,3 +31,14 @@ export const SessionSchema = z.object({
 });
 
 export type Session = z.infer<typeof SessionSchema>;
+
+export const PlanSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  maxCommunities: z.number(),
+  maxMembersPerCommunity: z.number(),
+  maxGuestsPerSession: z.number(),
+  maxMatchesPerSession: z.number(),
+});
+
+export type Plan = z.infer<typeof PlanSchema>;

@@ -5,6 +5,7 @@ import { createClient } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Users, Plus, PlayCircle, Trophy, Loader2, ArrowRight } from 'lucide-react';
+import { checkCommunityLimit } from '@/lib/limits';
 
 export default function DashboardIndexPage() {
   const [communities, setCommunities] = useState<any[]>([]);
@@ -41,6 +42,15 @@ export default function DashboardIndexPage() {
     if (!newCommunityName.trim()) return;
 
     setIsCreating(true);
+    
+    // Check limit
+    const canCreate = await checkCommunityLimit();
+    if (!canCreate) {
+      alert('Limit komunitas tercapai. Silakan upgrade plan Anda.');
+      setIsCreating(false);
+      return;
+    }
+
     const { data: { user } } = await supabase.auth.getUser();
     
     if (!user) return;
