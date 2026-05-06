@@ -5,6 +5,7 @@ import { useStore } from '@/store/useStore';
 import { useParams } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import { Users, Settings, Plus, X, Shuffle, User, UserPlus, Search, Loader2 } from 'lucide-react';
+import { checkGuestLimit, getUserLimits } from '@/lib/limits';
 
 export default function SetupPhase() {
   const params = useParams();
@@ -48,10 +49,22 @@ export default function SetupPhase() {
     setIsLoadingMembers(false);
   };
 
-  const handleAddGuest = () => {
+  const handleAddGuest = async () => {
     if (!playerName.trim()) return;
+    
+    setIsLoadingMembers(true);
+    const limits = await getUserLimits();
+    const localGuestCount = players.filter(p => !p.communityMemberId).length;
+
+    if (limits && localGuestCount >= limits.maxGuestsPerSession) {
+      alert(`Limit guest per sesi tercapai (${limits.maxGuestsPerSession}). Silakan upgrade plan Anda.`);
+      setIsLoadingMembers(false);
+      return;
+    }
+
     addPlayer(playerName.trim());
     setPlayerName('');
+    setIsLoadingMembers(false);
   };
 
   const handleAddMember = (member: any) => {
@@ -70,7 +83,18 @@ export default function SetupPhase() {
       // 1. Prepare matches locally (returns data without updating store immediately)
       const { players: localPlayers, matches: localMatches } = prepareSession(matchesPerPlayer, duration);
       
-      if (localPlayers.length === 0) return;
+      if (localPlayers.length === 0) {
+        setIsLoadingMembers(false);
+        return;
+      }
+
+      // Check Match Limit
+      const limits = await getUserLimits();
+      if (limits && localMatches.length > limits.maxMatchesPerSession) {
+        alert(`Limit pertandingan tercapai (${limits.maxMatchesPerSession}). Jadwal ini membutuhkan ${localMatches.length} pertandingan. Silakan kurangi pemain atau target match, atau upgrade plan Anda.`);
+        setIsLoadingMembers(false);
+        return;
+      }
 
       // 2. Insert players to Supabase
       const playersToInsert = localPlayers.map(p => ({

@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { Activity, Plus, PlayCircle, Calendar, Trophy, Loader2, ArrowLeft, Users, UserPlus, X, User } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { checkMemberLimit } from '@/lib/limits';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -97,6 +98,14 @@ export default function CommunityDetailPage({ params }: { params: Promise<{ id: 
     if (!newMemberName.trim()) return;
 
     setIsAddingMember(true);
+
+    const canAdd = await checkMemberLimit(communityId);
+    if (!canAdd) {
+      alert('Limit anggota komunitas tercapai. Silakan upgrade plan Anda.');
+      setIsAddingMember(false);
+      return;
+    }
+
     const { data, error } = await supabase
       .from('community_members')
       .insert([{ community_id: communityId, name: newMemberName.trim() }])

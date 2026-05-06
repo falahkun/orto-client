@@ -86,3 +86,17 @@ export async function checkGuestLimit(sessionId: string): Promise<boolean> {
   if (error) return false;
   return (count ?? 0) < limits.maxGuestsPerSession;
 }
+
+export async function checkMatchLimit(sessionId: string): Promise<boolean> {
+  const supabase = createClient();
+  const limits = await getUserLimits();
+  if (!limits) return false;
+
+  const { count, error } = await supabase
+    .from('matches')
+    .select('*', { count: 'exact', head: true })
+    .eq('session_id', sessionId);
+
+  if (error) return false;
+  return (count ?? 0) < limits.maxMatchesPerSession;
+}
